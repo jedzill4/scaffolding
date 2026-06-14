@@ -1,0 +1,47 @@
+# MARK: validate-pyproject
+[[repos]]
+repo = "https://github.com/abravalheri/validate-pyproject"
+rev = "v0.25"
+hooks = [
+  { id = "validate-pyproject", files = "^pyproject\\.toml$", priority = 0 }
+]
+
+# MARK: ruff-format
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.15.4"
+
+[[repos.hooks]]
+id = "ruff-format"
+priority = 0
+
+# MARK: ruff-check
+[[repos.hooks]]
+id = "ruff"
+args = ["--fix", "--exit-non-zero-on-fix"]
+types_or = ["python", "pyi"]
+require_serial = true
+priority = 1
+
+# MARK: pyrefly
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "pyrefly"
+name = "pyrefly"
+entry = "uvx pyrefly check --config pyproject.toml"
+language = "system"
+types = ["python"]
+pass_filenames = false
+priority = 2
+
+# MARK: ast-grep
+[[repos.hooks]]
+id = "ast-grep"
+name = "ast-grep"
+entry = "uvx --from ast-grep-cli ast-grep scan"
+language = "system"
+types = ["python"]
+pass_filenames = false
+priority = 2

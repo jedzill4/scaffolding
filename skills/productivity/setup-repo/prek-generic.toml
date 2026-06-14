@@ -1,0 +1,43 @@
+# MARK: uv-lock
+[[repos]]
+repo = "https://github.com/astral-sh/uv-pre-commit"
+rev = "0.10.7"
+hooks = [{ id = "uv-lock", priority = 0 }]
+
+# MARK: pre-commit-hooks
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+
+# MARK: check-merge-conflict
+[[repos.hooks]]
+id = "check-merge-conflict"
+priority = 0
+
+# MARK: check-added-large-files
+[[repos.hooks]]
+id = "check-added-large-files"
+args = ["--maxkb=750"]
+exclude = "^uv\\.lock$"
+priority = 0
+
+# MARK: check-toml
+[[repos.hooks]]
+id = "check-toml"
+priority = 0
+
+# MARK: check-yaml
+[[repos.hooks]]
+id = "check-yaml"
+args = ["--unsafe"]
+priority = 0
+
+# MARK: end-of-file-fixer
+[[repos.hooks]]
+id = "end-of-file-fixer"
+priority = 0
+
+# MARK: trailing-whitespace
+[[repos.hooks]]
+id = "trailing-whitespace"
+priority = 0
