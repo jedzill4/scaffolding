@@ -1,0 +1,36 @@
+name: zizmor
+
+# Static analysis of GitHub Actions workflows and actions with zizmor.
+# CI-only check: it is intentionally not wired into prek.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: zizmor-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.12"
+          enable-cache: true
+
+      # GH_TOKEN puts zizmor in online mode so it can resolve referenced
+      # actions (e.g. for the unpinned-uses audit). contents: read is enough.
+      - name: Run zizmor
+        run: uvx zizmor .
+        env:
+          GH_TOKEN: ${{ github.token }}

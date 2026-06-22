@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Keep pinned GitHub Actions up to date, grouped into a single weekly PR.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Python dependencies via uv (drop this block for non-uv / non-Python repos).
+  - package-ecosystem: uv
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

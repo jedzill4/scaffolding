@@ -20,7 +20,7 @@ Prepare an existing project repo with the small defaults I usually want before a
 
 ## Workflow
 
-1. Inspect the repo root for existing `.gitignore`, `.opencode/`, `opencode.json`, `opencode.jsonc`, `prek.toml`, `AGENTS.md`, `CLAUDE.md`, `.env.schema`, and any `.env*` files.
+1. Inspect the repo root for existing `.gitignore`, `.opencode/`, `opencode.json`, `opencode.jsonc`, `prek.toml`, `.github/workflows/`, `AGENTS.md`, `CLAUDE.md`, `.env.schema`, and any `.env*` files.
 2. Decide whether this is a clean setup (new/empty repo) or a migration into an existing working repo. See [New vs. Existing Repos (Migration)](#new-vs-existing-repos-migration). For a migration, present the installation plan and get the user's decision before writing anything beyond inspection.
 3. Preserve existing content. Only add missing files, missing lines, or missing config keys. Never delete, replace, reorder, or simplify existing data without explicit user authorization.
 4. Prefer repo-local OpenCode config at root `opencode.jsonc` so the settings travel with this repo and do not overwrite global config.
@@ -86,6 +86,27 @@ Create both additively, never overwriting existing rules:
 
 If `sgconfig.yml` already exists, preserve its `ruleDirs` and only add missing rule files. Drop or adjust individual rules to match the repo's conventions when the user asks; treat them as a starting point, not a mandate.
 
+## GitHub Actions CI
+
+GitHub Actions workflows are **opt-in**: ask the user before adding any of them, and skip the whole set if they decline. The deterministic installer prompts `Add GitHub Actions workflows? [y/N]` (default no, honoring `WITH_CI=1` / `SKIP_CI=1` to answer without asking); on the agentic path, ask the user directly and only proceed on a yes. When asked, also confirm *which* parts they want — the test suite, the security scans, Docker, and publishing are independent.
+
+The workflows live under `.github/workflows/` (and `dependabot.yml` under `.github/`) and follow a single house style derived from the `aymurai-asr` repo: `astral-sh/setup-uv@v5` pinned to `version: "0.11.12"`, `actions/checkout@v4`, a `concurrency` group with `cancel-in-progress`, least-privilege `permissions`, and a header comment explaining intent. Fetch the raw URL when you need the content to merge into an existing workflow.
+
+**Added when the user opts in (subject to the gates noted):**
+
+- [github/workflows/zizmor.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/zizmor.yml) — static analysis of GitHub Actions workflows/actions with [zizmor](https://docs.zizmor.sh) (`uvx zizmor .`, online mode via `GH_TOKEN`). Added to any repo (it only needs workflows to scan).
+- [github/workflows/tests.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/tests.yml) — lint, type-check and test on push/PR via `uv sync --frozen`, `uvx prek run --all-files`, and `uv run pytest`. Python (`uv`) repos only.
+- [github/workflows/pip-audit.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/pip-audit.yml) — Python dependency vulnerability scan with [`pip-audit`](https://github.com/pypa/pip-audit); exports the pinned set from `uv.lock` (`uv export --frozen`) and audits it with `pypa/gh-action-pip-audit`. Python (`uv`) repos only.
+- [github/dependabot.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/dependabot.yml) — weekly Dependabot updates for the `github-actions` and `uv` ecosystems. Python (`uv`) repos only; drop the `uv` block (or the whole file) for non-`uv` repos.
+- [github/workflows/docker.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/docker.yml) — build and push the runtime image to GHCR (`ghcr.io/<owner>/<repo>`, tagged from branch/sha/semver). Added only when the repo has a root `Dockerfile` **and** is public. GHCR is free for public packages, but **private packages bill storage and bandwidth past the free tier**, so for non-public repos the installer skips it and prints a notice — add it manually (or publish the package) if that cost is acceptable. Add a build matrix if you need multiple flavours (e.g. cpu/gpu).
+
+**Opt-in (publish-only, not auto-added):** PyPI publishing only makes sense for a **public Python package**, and assumes a tagged release flow plus PyPI Trusted Publishing. Add these only when the repo actually publishes; fetch them manually and fill the placeholders.
+
+- [github/workflows/release.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/release.yml) — tag-driven (`vX.Y.Z`) `uv build` + GitHub Release with generated notes.
+- [github/workflows/pypi.yml](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/github/workflows/pypi.yml) — publish to PyPI via Trusted Publishing when a Release is published. Replace `<PYPI_PROJECT_NAME>`, `<GITHUB_OWNER>`, `<GITHUB_REPO>` and configure the Trusted Publisher on PyPI first.
+
+These workflows assume `uv` and (for `release.yml`/`pypi.yml`/`docker.yml`) `hatch-vcs` version resolution; adjust if the repo uses a different build backend. The security workflows are CI-only and intentionally not wired into `prek` so they don't slow local commits. Never overwrite an existing workflow — if any target already exists, leave it untouched and only suggest additive changes the user approves. Bump third-party action and tool versions (`betterleaks`, `zizmor`, `pip-audit`, `setup-uv`) to current releases if the pinned ones are stale.
+
 ## `opencode.jsonc`
 
 Create or update this repo-local OpenCode config at the **repo root** (`opencode.jsonc`, not under `.opencode/`) from the bundled template [opencode-template.jsonc](https://raw.githubusercontent.com/jedzill4/repo-setup/main/setup/templates/opencode-template.jsonc). Use JSONC because its comments and trailing commas are intentional. The template sets the `$schema`, the `opencode-sessions-explorer` and `opencode-varlock@latest` plugins, and `permission` rules that deny reading/writing/printing secrets (`.env*`, `*.pem`, `*.key`, `*credentials*`, `varlock.config`) while allowing common safe commands.
@@ -150,7 +171,8 @@ For richer agent-skill docs, use Matt Pocock's upstream `setup-matt-pocock-skill
 ## Verify
 
 - `.gitignore` contains `.env`, `.tmp/`, `.scratch/`, `.worktrees/`, and `.journals/` exactly once, and does not ignore `.env.schema` (the `!.env.schema` negation is present).
-- `prek.toml` contains the generic hooks, and Python-specific hooks are present only when appropriate for the repo.
+- `prek.toml` contains the generic hooks (including the `betterleaks` secret scanner), and Python-specific hooks are present only when appropriate for the repo.
+- GitHub Actions workflows were offered, not forced: the user opted in (or `WITH_CI=1`) before anything was written, and declining left `.github/` untouched. When opted in: `zizmor.yml` for any repo; `tests.yml`, `pip-audit.yml`, and `.github/dependabot.yml` for `uv`-based Python repos; `docker.yml` only when a root `Dockerfile` is present and the repo is public (non-public repos got a GHCR-billing notice instead); publish-only `release.yml`/`pypi.yml` only for public Python packages that publish. Existing workflow files were left untouched.
 - When the `ast-grep` hook is present, a root `sgconfig.yml` and at least one rule under `ast-grep/rules/` exist so `ast-grep scan` runs cleanly; existing rules were preserved.
 - Python repos have a valid `pyproject.toml`; existing project metadata and dependencies were preserved.
 - Root `opencode.jsonc` is valid JSONC and includes the schema, plugin, permission, and `mcp` sections.

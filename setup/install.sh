@@ -20,6 +20,9 @@
 #   RAW_BASE=<url>                      (default: GitHub main)
 #   SKIP_SKILLS=1                       (skip npx skills add steps)
 #   SKIP_VARLOCK=1                      (skip varlock init)
+#   WITH_CI=1 | SKIP_CI=1              (force-add / skip GitHub Actions
+#                                       workflows without prompting)
+#   ASSUME_YES=1                        (answer all prompts with their default)
 
 set -euo pipefail
 
@@ -35,6 +38,25 @@ info() { printf '%s[info]%s  %s\n'  "$c_blue"   "$c_reset" "$1"; }
 defer() {
   printf '%s[defer]%s %s already exists — left untouched. Run the agentic guide to merge:\n         %s\n' \
     "$c_yellow" "$c_reset" "$1" "$RAW_BASE/guide.md"
+}
+
+# --- prompts -----------------------------------------------------------------
+# ask_yes_no "Question?" <default:y|n> — returns 0 for yes, 1 for no.
+# Reads from the controlling terminal so it works under `curl | bash`. When
+# there is no terminal (or ASSUME_YES=1), it returns the default without asking,
+# keeping non-interactive runs deterministic.
+ask_yes_no() {
+  local prompt="$1" default="${2:-n}" reply hint
+  [ "$default" = y ] && hint="Y/n" || hint="y/N"
+  # Interactive only when stdout is a terminal and /dev/tty can be opened.
+  if [ "${ASSUME_YES:-0}" = "1" ] || [ ! -t 1 ] || ! { : < /dev/tty; } 2>/dev/null; then
+    reply="$default"
+  else
+    printf '%s[ask]%s   %s [%s] ' "$c_blue" "$c_reset" "$prompt" "$hint" > /dev/tty
+    read -r reply < /dev/tty || reply="$default"
+    reply="${reply:-$default}"
+  fi
+  case "$reply" in [Yy]*) return 0 ;; *) return 1 ;; esac
 }
 
 # --- guards ------------------------------------------------------------------
@@ -78,6 +100,13 @@ ensure_gitignore() {
 # --- python detection --------------------------------------------------------
 is_python_repo() { [ -f pyproject.toml ] || ls ./*.py >/dev/null 2>&1; }
 
+# --- repo visibility ---------------------------------------------------------
+# Echoes "public", "private", "internal", or "" (unknown) using the gh CLI.
+repo_visibility() {
+  command -v gh >/dev/null 2>&1 || return 0
+  gh repo view --json visibility -q '.visibility' 2>/dev/null | tr '[:upper:]' '[:lower:]'
+}
+
 # --- opencode config ---------------------------------------------------------
 ensure_opencode() {
   write_if_absent "$TEMPLATES/opencode-template.jsonc" "opencode.jsonc"
@@ -96,6 +125,51 @@ ensure_prek() {
     add "prek.toml (python hooks appended)"
     ensure_ast_grep
     write_if_absent "$TEMPLATES/pyproject-template.toml" "pyproject.toml"
+  fi
+}
+
+# --- github actions CI -------------------------------------------------------
+# Opt-in. The user is asked before any workflow is written (default: no), so
+# repos that don't want CI stay clean. Overrides: WITH_CI=1 adds without asking,
+# SKIP_CI=1 skips without asking. Within the suite, publish-only workflows stay
+# opt-in and are documented in the guide instead of being scaffolded:
+#   - release.yml / pypi.yml: PyPI publishing only makes sense for a *public*
+#     Python package, and needs a tagged release flow + Trusted Publishing.
+#   - docker.yml: pushes to GHCR. GHCR is free for *public* packages; private
+#     packages bill storage/bandwidth past the free tier — so we warn first.
+ensure_ci() {
+  if [ "${SKIP_CI:-0}" = "1" ]; then
+    info "SKIP_CI=1 — skipping GitHub Actions workflows"
+    return 0
+  fi
+  if [ "${WITH_CI:-0}" != "1" ]; then
+    if ! ask_yes_no "Add GitHub Actions workflows (tests, security scans, dependabot)?" n; then
+      info "Skipping GitHub Actions workflows (re-run with WITH_CI=1 to add them)"
+      return 0
+    fi
+  fi
+
+  # zizmor: GitHub Actions workflow/action static analysis (any repo).
+  write_if_absent "$TEMPLATES/github/workflows/zizmor.yml" ".github/workflows/zizmor.yml"
+
+  if is_python_repo; then
+    # Test/lint workflow + dependency vuln scan + dependabot (uv-based repos).
+    write_if_absent "$TEMPLATES/github/workflows/tests.yml" ".github/workflows/tests.yml"
+    write_if_absent "$TEMPLATES/github/workflows/pip-audit.yml" ".github/workflows/pip-audit.yml"
+    write_if_absent "$TEMPLATES/github/dependabot.yml" ".github/dependabot.yml"
+  fi
+
+  # docker.yml only when the repo actually ships a Dockerfile. Warn about GHCR
+  # billing for non-public repos before adding it.
+  if [ -f Dockerfile ]; then
+    case "$(repo_visibility)" in
+      private|internal)
+        skip "Dockerfile found, but repo is non-public — docker.yml pushes to GHCR, which bills storage/bandwidth for private packages past the free tier. Left untouched; add it manually (or publish the package) if that's intended."
+        ;;
+      *)
+        write_if_absent "$TEMPLATES/github/workflows/docker.yml" ".github/workflows/docker.yml"
+        ;;
+    esac
   fi
 }
 
@@ -160,6 +234,7 @@ main() {
   ensure_gitignore
   ensure_opencode
   ensure_prek
+  ensure_ci
   ensure_agents_md
   ensure_skills
   ensure_varlock
