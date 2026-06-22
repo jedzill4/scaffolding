@@ -343,7 +343,6 @@ wheels = [
 
 [[package]]
 name = "scaffolding"
-version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "cyclopts" },

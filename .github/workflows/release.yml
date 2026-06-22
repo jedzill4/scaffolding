@@ -1,9 +1,10 @@
 name: Release
 
 # Tag-driven (hatch-vcs): `git tag vX.Y.Z && git push origin vX.Y.Z`.
-# Builds the sdist/wheel and creates a GitHub Release. PyPI publishing is a
-# separate workflow (pypi.yml) triggered when this Release is published, so a
-# PyPI misconfiguration never blocks the GitHub Release.
+# Gated on the Tests suite (reusable workflow) — the release only runs after
+# lint, type-check and pytest pass for the tagged commit.
+# Builds the sdist/wheel and creates a GitHub Release. This project does not
+# publish to PyPI.
 
 on:
   push:
@@ -14,8 +15,15 @@ permissions:
   contents: write
 
 jobs:
+  # Run the full Tests suite against the tagged commit first; release depends
+  # on it via `needs`, so a failing build never produces a Release.
+  test:
+    name: tests
+    uses: ./.github/workflows/tests.yml
+
   release:
     name: build & github release
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

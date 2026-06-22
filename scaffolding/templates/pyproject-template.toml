@@ -1,6 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+# Version derived from git tags (vX.Y.Z) by hatch-vcs.
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
@@ -90,7 +94,7 @@ markers = [
 
 [project]
 name = "replace-me"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Replace me"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"

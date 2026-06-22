@@ -8,6 +8,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Allow other workflows (e.g. release.yml) to gate on this suite.
+  workflow_call:
 
 concurrency:
   group: tests-${{ github.workflow }}-${{ github.ref }}
