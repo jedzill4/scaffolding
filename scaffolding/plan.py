@@ -5,11 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-# JSON-object boundary type. Named alias (not a bare ``dict``) so the bundled
-# ast-grep no-dict-return rules stay enforced for accidental domain dicts while
-# explicit serialization boundaries opt in clearly.
-JsonObj = dict[str, object]
-
 
 class Disposition(StrEnum):
     ADD = "add"
@@ -33,8 +28,10 @@ class Op:
     cmd: list[str] | None = None
     optional: bool = False
 
-    def to_dict(self) -> JsonObj:
-        obj: JsonObj = {
+    # JSON-serialization boundary: dict is the JSON representation here.
+    # ast-grep-ignore: no-dict-return-annotation
+    def to_dict(self) -> dict[str, object]:
+        obj: dict[str, object] = {
             "component": self.component,
             "kind": self.kind,
             "target": self.target,
@@ -53,8 +50,10 @@ class Decision:
     question: str
     default: str
 
-    def to_dict(self) -> JsonObj:
-        obj: JsonObj = {
+    # JSON-serialization boundary: dict is the JSON representation here.
+    # ast-grep-ignore: no-dict-return-annotation
+    def to_dict(self) -> dict[str, object]:
+        obj: dict[str, object] = {
             "tier": self.tier,
             "key": self.key,
             "question": self.question,
@@ -77,8 +76,10 @@ class Plan:
     def deferred_merges(self) -> list[str]:
         return [o.target for o in self.by(Disposition.DEFER)]
 
-    def to_json_obj(self) -> JsonObj:
-        obj: JsonObj = {
+    # JSON-serialization boundary: dict is the JSON representation here.
+    # ast-grep-ignore: no-dict-return-annotation
+    def to_json_obj(self) -> dict[str, object]:
+        obj: dict[str, object] = {
             "facts": self.facts,
             "clean_adds": [o.to_dict() for o in self.by(Disposition.ADD)],
             "runs": [o.to_dict() for o in self.by(Disposition.RUN)],

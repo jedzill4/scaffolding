@@ -14,7 +14,7 @@ from .components import AGENT_CHOICES, ALL_CI_PARTS, DEFAULT_CI_PARTS, REGISTRY
 from .doctor import probe_tools, repo_state
 from .engine import UnknownComponent, build_plan
 from .facts import Facts, detect
-from .plan import JsonObj, Plan
+from .plan import Plan
 from .settings import Settings
 
 app = App(
@@ -44,10 +44,12 @@ def _split(s: str | None) -> list[str]:
     return [x.strip() for x in s.split(",") if x.strip()] if s else []
 
 
+# Dynamic decision map, keyed by component; consumed generically by key.
+# ast-grep-ignore: no-dict-return-annotation
 def _seed_decisions(
     name: str | None, description: str | None, varlock: bool | None, ci_parts: str | None
-) -> JsonObj:
-    d: JsonObj = {}
+) -> dict[str, object]:
+    d: dict[str, object] = {}
     if name:
         d["pyproject_name"] = name
     if description:

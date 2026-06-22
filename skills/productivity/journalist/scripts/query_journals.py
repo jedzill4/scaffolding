@@ -7,10 +7,6 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
-# Parsed YAML-ish frontmatter (string→string). Named alias keeps the repo's
-# ast-grep no-dict-return rules satisfied for this serialization boundary.
-Frontmatter = dict[str, str]
-
 
 @dataclass
 class Entry:
@@ -22,8 +18,10 @@ class Entry:
     text: str
 
 
-def parse_frontmatter(text: str) -> Frontmatter:
-    metadata: Frontmatter = {}
+# Generic key/value frontmatter parser; a dict is the natural representation.
+# ast-grep-ignore: no-dict-return-annotation
+def parse_frontmatter(text: str) -> dict[str, str]:
+    metadata: dict[str, str] = {}
     if not text.startswith("---\n"):
         return metadata
     end = text.find("\n---\n", 4)

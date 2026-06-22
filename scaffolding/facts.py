@@ -8,8 +8,6 @@ import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .plan import JsonObj
-
 
 @dataclass
 class Facts:
@@ -24,7 +22,9 @@ class Facts:
     has_uv: bool
     has_curl: bool
 
-    def to_dict(self) -> JsonObj:
+    # JSON-serialization boundary: dict is the JSON representation here.
+    # ast-grep-ignore: no-dict-return-annotation
+    def to_dict(self) -> dict[str, object]:
         return asdict(self)
 
 

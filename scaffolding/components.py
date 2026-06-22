@@ -20,7 +20,12 @@ from .templates_registry import template_text
 
 GITIGNORE_ENTRIES = [".env", "!.env.schema", ".tmp/", ".scratch/", ".worktrees/", ".journals/"]
 AGENTS_MARKER = "## Repo Workspace Defaults"
-ASTGREP_RULES = ["no-dict-call-return", "no-dict-literal-return", "no-dict-return-annotation"]
+ASTGREP_RULES = [
+    "no-dict-call-return",
+    "no-dict-literal-return",
+    "no-dict-return-annotation",
+    "no-dict-alias",
+]
 MATTPOCOCK_SKILLS = [
     "setup-matt-pocock-skills",
     "diagnose",

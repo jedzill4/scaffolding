@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .facts import detect
-from .plan import JsonObj
 
 
 @dataclass
@@ -49,9 +48,11 @@ def probe_tools() -> list[Probe]:
     return probes
 
 
-def repo_state(root: Path | None = None) -> JsonObj:
+# JSON-serialization boundary: dict is the JSON representation here.
+# ast-grep-ignore: no-dict-return-annotation
+def repo_state(root: Path | None = None) -> dict[str, object]:
     facts = detect(root)
-    state: JsonObj = {
+    state: dict[str, object] = {
         "git repo root": facts.is_git_repo,
         "python repo": facts.is_python,
         "Dockerfile": facts.has_dockerfile,
