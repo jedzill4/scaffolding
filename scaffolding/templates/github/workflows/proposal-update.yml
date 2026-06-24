@@ -2,18 +2,20 @@ name: proposal-update
 
 # Comment "/update-proposal <instructions>" on an issue and this rewrites the
 # issue body (the proposal) in place — it never touches repository files or
-# opens a PR. Generation is done by `opencode run` (reusing the same NVIDIA /
-# Z.AI keys as opencode.yml); the write-back is a deterministic `gh issue edit`,
-# so the model only ever produces text — it cannot wander into editing code.
+# opens a PR.
+#
+# The new body is produced by a single OpenAI-compatible chat-completion call
+# (clean choices[0].message.content), NOT by `opencode run` — the agent renders
+# a streamed transcript to stdout, which produced duplicated/garbled bodies.
+# The write-back is a deterministic `gh issue edit`, so the model only ever
+# produces text and can never modify code.
 #
 # Split of responsibilities:
 #   /oc ...               -> general agent (opencode.yml): can edit code, open PRs
 #   /update-proposal ...  -> this workflow: rewrites the current issue body only
-env:
-  # Same per-provider model ids as opencode.yml. Switch the active provider by
-  # pointing GEN_MODEL at the other one.
-  NVIDIA_MODEL: nvidia/nvidia/nemotron-3-ultra-550b-a55b
-  ZAI_MODEL: zai/glm-5.1
+#
+# Generator config below defaults to the NVIDIA hosted catalog (free). To use
+# Z.AI instead, swap the three GEN_* values for the commented Z.AI block.
 
 on:
   issue_comment:
@@ -30,21 +32,10 @@ jobs:
       github.event.issue.pull_request == null &&
       contains(github.event.comment.body, '/update-proposal')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
-      contents: read
       issues: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Install opencode
-        run: |
-          curl -fsSL https://opencode.ai/install | bash
-          echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
-
       - name: Fetch issue context
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,21 +47,61 @@ jobs:
 
       - name: Generate updated proposal body
         env:
-          # opencode reads provider keys from the environment.
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
-          GEN_MODEL: ${{ env.NVIDIA_MODEL }}
+          # --- NVIDIA hosted catalog (default, free) ---------------------------
+          GEN_ENDPOINT: https://integrate.api.nvidia.com/v1/chat/completions
+          GEN_MODEL: nvidia/nemotron-3-ultra-550b-a55b
+          GEN_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          # --- Z.AI alternative (verify endpoint/model before use) ------------
+          # GEN_ENDPOINT: https://api.z.ai/api/paas/v4/chat/completions
+          # GEN_MODEL: glm-5.1
+          # GEN_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         run: |
-          set -o pipefail
-          opencode run --model "$GEN_MODEL" \
-            'Read ./issue.json — it is a GitHub issue (number, title, body,
-             comments) describing a proposal. Read the repository as needed to
-             ground the proposal in the actual code. Then produce an improved,
-             complete replacement Markdown body for the proposal that
-             incorporates the discussion in the comments. Do NOT modify any
-             repository files. Output ONLY the final Markdown body: no code
-             fences, no preamble, no trailing commentary.' \
-            > updated_body.md 2> opencode.log || { cat opencode.log; exit 1; }
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+
+          issue = json.load(open("issue.json"))
+          comments = "\n\n".join(
+              f"@{c['author']['login']}: {c['body']}" for c in issue.get("comments", [])
+          )
+          system = (
+              "You revise GitHub issue proposal bodies. Return ONLY the full "
+              "replacement Markdown body for the issue: no surrounding code "
+              "fences, no preamble, no trailing commentary."
+          )
+          user = (
+              f"Current proposal title: {issue['title']}\n\n"
+              f"Current proposal body:\n{issue['body']}\n\n"
+              f"Discussion / instructions from comments:\n{comments}\n\n"
+              "Rewrite the proposal body to incorporate the discussion. "
+              "Keep it a well-structured Markdown document starting with a heading."
+          )
+          payload = {
+              "model": os.environ["GEN_MODEL"],
+              "messages": [
+                  {"role": "system", "content": system},
+                  {"role": "user", "content": user},
+              ],
+              "temperature": 0.2,
+              "max_tokens": 8192,
+          }
+          req = urllib.request.Request(
+              os.environ["GEN_ENDPOINT"],
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Authorization": f"Bearer {os.environ['GEN_API_KEY']}",
+                  "Content-Type": "application/json",
+              },
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=600) as r:
+                  resp = json.load(r)
+          except urllib.error.HTTPError as e:
+              print("API error", e.code, e.read().decode()[:2000])
+              raise
+          content = resp["choices"][0]["message"]["content"].strip()
+          with open("updated_body.md", "w") as f:
+              f.write(content + "\n")
+          PY
 
       - name: Validate generated body
         run: |
@@ -79,8 +110,7 @@ jobs:
             sed -i '1d' updated_body.md
             tail -1 updated_body.md | grep -q '^```$' && sed -i '$d' updated_body.md
           fi
-          # Drop leading blank lines, then sanity-check.
-          sed -i '/./,$!d' updated_body.md
+          sed -i '/./,$!d' updated_body.md           # drop leading blank lines
           test -s updated_body.md
           head -1 updated_body.md | grep -q '^#' || {
             echo "Generated body does not look like a proposal (no leading heading)."
