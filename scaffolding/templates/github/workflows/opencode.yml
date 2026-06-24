@@ -39,8 +39,14 @@ jobs:
       contains(github.event.comment.body, '/oc') ||
       contains(github.event.comment.body, '/opencode')
     runs-on: ubuntu-latest
+    # Use the runner's built-in GITHUB_TOKEN (use_github_token below) instead of
+    # the OpenCode App installation token, so these scopes authorize the bot to
+    # comment / commit / open PRs. The commenter still needs repo write access.
     permissions:
       id-token: write
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -51,11 +57,14 @@ jobs:
       - name: Run OpenCode
         uses: anomalyco/opencode/github@latest
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Provide the key(s) for whichever provider(s) you use. Unused ones
           # can stay unset.
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         with:
+          # Act as github-actions[bot] via the workflow token instead of the App.
+          use_github_token: true
           # Default: NVIDIA (free). Switch to Z.AI by using ${{ env.ZAI_MODEL }}.
           model: ${{ env.NVIDIA_MODEL }}
           # share: true
