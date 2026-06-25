@@ -18,7 +18,7 @@ from datetime import UTC, datetime
 from typing import ClassVar
 
 from rich.text import Text
-from textual import work
+from textual import events, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -353,6 +353,17 @@ class DetailScreen(Screen):
             self.notify("end of list" if delta > 0 else "start of list")
             return
         self._show_issue(nxt)
+
+    def on_text_selected(self, event: events.TextSelected) -> None:
+        """Auto-copy any selected text in the proposal body to the clipboard.
+
+        The screen posts `TextSelected` on mouse-up; a plain click clears the
+        selection first, so only copy/notify when there's actually text.
+        """
+        selected = self.get_selected_text()
+        if selected:
+            self.app.copy_to_clipboard(selected)
+            self.notify("copied selection to clipboard")
 
     def on_markdown_link_clicked(self, event: Markdown.LinkClicked) -> None:
         """Follow clicked links: `issue:N` jumps in-app; http(s) opens a browser."""
