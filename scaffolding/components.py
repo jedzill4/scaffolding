@@ -41,6 +41,8 @@ STANDARDS_RULE_DETAILS = [
     "no-utils",
     "repo-shape",
     "agents-conventional-commits",
+    "import-linter",
+    "api-boundary-layout",
 ]
 # Canonical drop-in / comparison code shipped under snippets/ (may be nested, e.g. core/logger.py).
 STANDARDS_SNIPPETS = ["no-dict-boundary.py", "core/logger.py", "api-schemas.py", "settings.py"]

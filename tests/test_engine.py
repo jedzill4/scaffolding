@@ -372,6 +372,38 @@ def test_conventional_commits_artifacts_are_ces_coded():
     assert "PR_TITLE: ${{ github.event.pull_request.title }}" in wf
 
 
+def test_standards_pyproject_layer_rules_add_details(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["standards"])
+    disp = _standards_dispositions(plan)
+    adds = {t for t, d in disp.items() if d is Disposition.ADD}
+    assert ".agents/rules/import-linter.md" in adds
+    assert ".agents/rules/api-boundary-layout.md" in adds
+
+
+def test_pyproject_plan_adds_on_clean_defers_on_existing(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["pyproject"])
+    assert "pyproject.toml" in _targets(plan, Disposition.ADD)
+    apply(plan, repo)
+    plan2 = build_plan(repo, _facts(repo), Settings(), requested=["pyproject"])
+    assert "pyproject.toml" in _targets(plan2, Disposition.DEFER)
+
+
+def test_pyproject_template_version_pin_and_importlinter_skeleton():
+    body = template_text("pyproject-template.toml")
+    # CES-77: requires-python is a non-enforced comment defaulting to 3.14.
+    assert "CES-77 (version pin)" in body
+    assert '# requires-python = ">=3.14"' in body
+    # the active requires-python line is gone (commented only).
+    active = [ln for ln in body.splitlines() if ln.strip().startswith("requires-python")]
+    assert active == []
+    # CES-5 / CES-17: commented import-linter skeleton present.
+    assert "# [tool.importlinter]" in body
+    assert "Layered architecture (CES-5)" in body
+    assert "CES-17" in body
+
+
 def test_ces_codes_embedded_in_as_built_rule_messages():
     for slug in (
         "no-dict-call-return",

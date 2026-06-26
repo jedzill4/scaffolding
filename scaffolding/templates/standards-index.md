@@ -51,3 +51,11 @@ rules are reviewer/agent judgment. Full convention: `docs/engineering-standards.
 - **CES-75 · Conventional Commits** `[prek]` — commit subjects follow `type(scope): description`;
   a commit-msg hook checks every commit and a CI workflow checks the PR title. Slug:
   `agents-conventional-commits`. → `@.agents/rules/agents-conventional-commits.md`
+- **CES-77 · version pin** `[judgment]` — `requires-python` ships as a non-enforced comment
+  (house default 3.14); an existing repo's pin wins. → see `pyproject.toml` comment.
+- **CES-5 · layered import direction** `[judgment]` — imports flow `entrypoints → api →
+  database/impl → core`, never upward; ships as a commented `[tool.importlinter]` skeleton to
+  uncomment once layers exist. Slug: `import-linter`. → `@.agents/rules/import-linter.md`
+- **CES-17 · API boundary layout** `[judgment]` — inbound HTTP lives in a versioned `api` package
+  (`api/<v>/schemas/{requests,responses}`, `routers/`); only `api` is the inbound boundary. Slug:
+  `api-boundary-layout`. → `@.agents/rules/api-boundary-layout.md`

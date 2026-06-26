@@ -82,6 +82,33 @@ project-excludes = [
 use-ignore-files = false
 disable-project-excludes-heuristics = true
 
+# MARK: import-linter (CES-5 layer direction, CES-17 api-boundary layout)
+# Commented skeleton — uncomment once the package actually has layers. Enforces the house import
+# direction: entrypoints -> api -> database/impl -> core (a higher layer may import lower ones,
+# never the reverse). Add `import-linter` to the dev group and run `uvx --from import-linter
+# lint-imports`. Replace `myapp` below with your import package name.
+#
+# [tool.importlinter]
+# root_package = "myapp"
+#
+# [[tool.importlinter.contracts]]
+# name = "Layered architecture (CES-5)"
+# type = "layers"
+# layers = [
+#   "myapp.entrypoints",
+#   "myapp.api",
+#   "myapp.database | myapp.impl",
+#   "myapp.core",
+# ]
+#
+# # CES-17 api-boundary layout: the api package is the only inbound HTTP boundary; nothing
+# # outside api may import api.schemas/routers internals.
+# [[tool.importlinter.contracts]]
+# name = "API is the only inbound boundary (CES-17)"
+# type = "forbidden"
+# source_modules = ["myapp.core", "myapp.database"]
+# forbidden_modules = ["myapp.api"]
+
 # MARK: Pytest
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -97,7 +124,10 @@ name = "replace-me"
 dynamic = ["version"]
 description = "Replace me"
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+# CES-77 (version pin): requires-python is intentionally left as a non-enforced comment so an
+# existing repo's pin wins (pairs with general-respect-local-repo, CES-30). The house baseline
+# default is 3.14 — uncomment and adjust only when you deliberately set a floor:
+# requires-python = ">=3.14"
 
 # MARK: Dependencies
 dependencies = []
