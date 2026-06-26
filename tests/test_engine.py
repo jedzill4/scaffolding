@@ -284,6 +284,32 @@ def test_cli_framework_rule_is_ces_coded_and_warns():
     assert "sys.argv" in body
 
 
+def test_standards_database_package_rule_adds_detail(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["standards"])
+    disp = _standards_dispositions(plan)
+    adds = {t for t, d in disp.items() if d is Disposition.ADD}
+    assert ".agents/rules/arch-database-package.md" in adds
+
+
+def test_astgrep_ships_database_package_rule(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["ast-grep"])
+    adds = {op.target for op in plan.by(Disposition.ADD) if op.component == "ast-grep"}
+    assert "ast-grep/rules/arch-database-package.yml" in adds
+
+
+def test_database_package_rule_is_ces_coded_and_placement_scoped():
+    body = template_text("ast-grep-rules/arch-database-package.yml")
+    assert "CES-18 (arch-database-package)" in body
+    assert "id: arch-database-package" in body
+    assert "severity: warning" in body
+    assert "severity: info" not in body
+    # scoped to the common wrong homes; inert in a correct database/ package.
+    assert "**/persistence/**/*.py" in body
+    assert "**/core/**/*.py" in body
+
+
 def test_ces_codes_embedded_in_as_built_rule_messages():
     for slug in (
         "no-dict-call-return",

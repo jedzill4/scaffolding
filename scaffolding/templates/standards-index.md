@@ -38,3 +38,7 @@ rules are reviewer/agent judgment. Full convention: `docs/engineering-standards.
 - **CES-67 · typed, declarative CLIs** `[ast-grep]` — build CLIs with Typer/Cyclopts/pydantic-settings
   + Rich, not `argparse`/`click`/`sys.argv`. Warning (encouraged, not mandated); naturally inert
   when unused. Slug: `cli-typed-framework`. → `@.agents/rules/cli-typed-framework.md`
+- **CES-18 · persistence in a database package** `[ast-grep]` — SQLModel tables, `create_engine`,
+  and `sessionmaker` belong in a dedicated `database` package, not under `persistence/`/`meta/`/`core/`.
+  Placement-scoped; the import-linter contract lands commented in Slice 09. Slug:
+  `arch-database-package`. → `@.agents/rules/arch-database-package.md`
