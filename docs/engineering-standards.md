@@ -64,7 +64,7 @@ fix + code", that belongs in the detail file, not the message.
   listing every rule (terse directive + `[ast-grep]`/`[prek]`/`[judgment]` marker + an
   `@.agents/rules/<slug>.md` pointer).
 - **On-demand detail:** `.agents/rules/<slug>.md` — full rationale, examples, migration.
-- **Canonical code:** `snippets/` — drop-ins for new repos, comparison templates for existing
+- **Canonical code:** `.agents/snippets/` — drop-ins for new repos, comparison templates for existing
   ones.
 
 (Rationale for index-in-AGENTS.md over packaged skills: passive always-on context outperforms

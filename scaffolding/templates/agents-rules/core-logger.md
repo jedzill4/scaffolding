@@ -1,13 +1,13 @@
 # CES-74 · the house logger (core/logger.py)
 
 **Code:** `CES-74` &nbsp;·&nbsp; **Slug:** `core-logger` &nbsp;·&nbsp; **Ships as:** snippet
-(`snippets/core/logger.py`) &nbsp;·&nbsp; **Tracker:**
+(`.agents/snippets/core/logger.py`) &nbsp;·&nbsp; **Tracker:**
 [#74](https://github.com/jedzill4/scaffolding/issues/74)
 
 ## Directive
 
 Logging is configured in exactly one place: a `core/logger.py` module built on
-[structlog](https://www.structlog.org), shipped as the drop-in `snippets/core/logger.py`. Copy
+[structlog](https://www.structlog.org), shipped as the drop-in `.agents/snippets/core/logger.py`. Copy
 it to `<your_package>/core/logger.py` and import `get_logger` everywhere. This is the structure
 that `log-get-logger` (CES-45) and `log-no-print` (CES-46) point at.
 

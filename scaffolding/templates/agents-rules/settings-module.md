@@ -36,7 +36,7 @@ if settings.debug:
     ...
 ```
 
-See `snippets/settings.py` for the canonical `BaseSettings` + `get_settings()` module.
+See `.agents/snippets/settings.py` for the canonical `BaseSettings` + `get_settings()` module.
 
 ## Don't
 

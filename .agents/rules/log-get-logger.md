@@ -8,7 +8,7 @@
 
 Never call `logging.getLogger(...)` (or a bare `getLogger(...)`) directly. Acquire loggers
 through the house `get_logger` from `core/logger.py` — the canonical structlog setup shipped as
-`snippets/core/logger.py` (CES-74).
+`.agents/snippets/core/logger.py` (CES-74).
 
 ## Why
 
@@ -35,7 +35,7 @@ import logging
 log = logging.getLogger(__name__)  # log-get-logger
 ```
 
-The drop-in lives at `snippets/core/logger.py` — copy it to `<your_package>/core/logger.py`.
+The drop-in lives at `.agents/snippets/core/logger.py` — copy it to `<your_package>/core/logger.py`.
 
 ## Suppressing (rare, must be visible)
 

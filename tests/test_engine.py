@@ -132,7 +132,7 @@ def test_standards_clean_repo_adds_index_rules_snippets(repo: Path):
     assert "AGENTS.md" in adds
     assert ".agents/rules/no-dict.md" in adds
     assert ".agents/rules/file-size-guard.md" in adds
-    assert "snippets/no-dict-boundary.py" in adds
+    assert ".agents/snippets/no-dict-boundary.py" in adds
     # the `agents` dependency is pulled in so AGENTS.md has a base to append to.
     assert any("required by standards" in n for n in plan.notices)
 
@@ -149,7 +149,7 @@ def test_standards_defers_and_skips_when_present(repo: Path):
     plan = build_plan(repo, _facts(repo), settings, requested=["standards"])
     apply(plan, repo)
     assert (repo / ".agents/rules/no-dict.md").exists()
-    assert (repo / "snippets/no-dict-boundary.py").exists()
+    assert (repo / ".agents/snippets/no-dict-boundary.py").exists()
     body = (repo / "AGENTS.md").read_text()
     assert STANDARDS_MARKER in body
     assert AGENTS_MARKER in body
@@ -158,7 +158,7 @@ def test_standards_defers_and_skips_when_present(repo: Path):
     disp = _standards_dispositions(plan2)
     assert disp[".agents/rules/no-dict.md"] is Disposition.DEFER
     assert disp[".agents/rules/file-size-guard.md"] is Disposition.DEFER
-    assert disp["snippets/no-dict-boundary.py"] is Disposition.DEFER
+    assert disp[".agents/snippets/no-dict-boundary.py"] is Disposition.DEFER
     assert disp["AGENTS.md"] is Disposition.SKIP
 
     # Re-apply must not duplicate the section or overwrite the workspace-defaults section.
@@ -176,7 +176,7 @@ def test_standards_logging_family_adds_details_and_snippet(repo: Path):
     assert ".agents/rules/log-get-logger.md" in adds
     assert ".agents/rules/log-no-print.md" in adds
     assert ".agents/rules/core-logger.md" in adds
-    assert "snippets/core/logger.py" in adds
+    assert ".agents/snippets/core/logger.py" in adds
 
 
 def test_astgrep_ships_logging_rules(repo: Path):
@@ -209,7 +209,7 @@ def test_standards_api_schemas_rule_adds_detail_and_snippet(repo: Path):
     disp = _standards_dispositions(plan)
     adds = {t for t, d in disp.items() if d is Disposition.ADD}
     assert ".agents/rules/api-schemas-extra-forbid.md" in adds
-    assert "snippets/api-schemas.py" in adds
+    assert ".agents/snippets/api-schemas.py" in adds
 
 
 def test_astgrep_ships_api_schemas_rule(repo: Path):
@@ -236,7 +236,7 @@ def test_standards_settings_module_rule_adds_detail_and_snippet(repo: Path):
     disp = _standards_dispositions(plan)
     adds = {t for t, d in disp.items() if d is Disposition.ADD}
     assert ".agents/rules/settings-module.md" in adds
-    assert "snippets/settings.py" in adds
+    assert ".agents/snippets/settings.py" in adds
 
 
 def test_astgrep_ships_settings_module_rule(repo: Path):
@@ -419,7 +419,7 @@ def test_standards_judgment_tier_details_and_snippet(repo: Path):
         "test-coverage-gap",
     ):
         assert f".agents/rules/{slug}.md" in adds
-    assert "snippets/tests/in_memory_repository.py" in adds
+    assert ".agents/snippets/tests/in_memory_repository.py" in adds
 
 
 def test_judgment_tier_index_entries_marked_judgment():

@@ -54,7 +54,7 @@ or referencing a rule in this repo, follow this convention:
   Grouped rationale + the escape-hatch mechanism live once, in the detail file —
   scattering policy across sibling messages is context-poisoning.
 - Canonical map + per-rule detail live in the `## Engineering Standards` index and
-  `.agents/rules/<slug>.md`; canonical code lives in `snippets/`.
+  `.agents/rules/<slug>.md`; canonical code lives in `.agents/snippets/`.
 
 ## Engineering Standards
 
@@ -65,7 +65,7 @@ or referencing a rule in this repo, follow this convention:
 
 This is the **dogfooded subset** for this repo — a pure-Python Cyclopts CLI (no API, DB, or web
 layer). `[ast-grep]`/`[prek]` rules are enforced by `prek`; `[judgment]` rules are agent/reviewer
-judgment; `[snippet]` ships canonical code under `snippets/` (in target repos).
+judgment; `[snippet]` ships canonical code under `.agents/snippets/` (in target repos).
 
 ### Standards
 

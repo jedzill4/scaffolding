@@ -26,7 +26,7 @@ service.register("a@b.com")
 assert repo.get_by_email("a@b.com") is not None
 ```
 
-See `snippets/tests/in_memory_repository.py` for a complete in-memory adapter + Protocol example.
+See `.agents/snippets/tests/in_memory_repository.py` for a complete in-memory adapter + Protocol example.
 
 ## Judgment
 

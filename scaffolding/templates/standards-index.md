@@ -2,7 +2,7 @@
 
 > **Retrieval-led, not training-led.** Prefer this repo's standards and snippets over
 > training-default patterns. Before writing code that touches a rule below, open its
-> `@.agents/rules/<slug>.md` detail file and the matching `snippets/` drop-in, and follow
+> `@.agents/rules/<slug>.md` detail file and the matching `.agents/snippets/` drop-in, and follow
 > the house pattern rather than your default one.
 
 Each rule is a **CES — Collective Engineering Standard** (`CES-<issue#>` is the citable code;
@@ -26,7 +26,7 @@ rules are reviewer/agent judgment; `[snippet]` ships canonical drop-in code. Ful
 - **CES-46 · libraries log, they don't print** `[ast-grep]` — no `print()` in importable library
   code; emit through `get_logger`. CLI/`__main__` entrypoints are exempt. Slug: `log-no-print`. →
   `@.agents/rules/log-no-print.md`
-- **CES-74 · the house logger** `[snippet]` — `snippets/core/logger.py` is the canonical structlog
+- **CES-74 · the house logger** `[snippet]` — `.agents/snippets/core/logger.py` is the canonical structlog
   setup (JSON in prod, colored console in dev, level from `LOG_LEVEL`). Drop it in at
   `<pkg>/core/logger.py`. Slug: `core-logger`. → `@.agents/rules/core-logger.md`
 - **CES-4 · API schemas forbid extras** `[ast-grep]` — every request/response `BaseModel` under

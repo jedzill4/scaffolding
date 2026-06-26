@@ -495,9 +495,9 @@ def plan_standards(ctx: Context) -> list[Op]:
     ops += [
         _write_if_absent(
             "standards",
-            ctx.root / "snippets" / snippet,
+            ctx.root / ".agents" / "snippets" / snippet,
             template_text(f"snippets/{snippet}"),
-            f"snippets/{snippet}",
+            f".agents/snippets/{snippet}",
             ctx.guide_url,
         )
         for snippet in STANDARDS_SNIPPETS

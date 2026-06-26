@@ -37,7 +37,7 @@ class CreateUserRequest(BaseModel):
 ```
 
 `extra="forbid"` may sit alongside other config (`ConfigDict(frozen=True, extra="forbid")`).
-See `snippets/api-schemas.py` for the canonical request + response pair.
+See `.agents/snippets/api-schemas.py` for the canonical request + response pair.
 
 ## Don't
 

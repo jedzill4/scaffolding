@@ -7,7 +7,7 @@
 ## Directive
 
 Don't use `print()` in importable library code. Emit through the house `get_logger`
-(`snippets/core/logger.py`, CES-74) so output is structured, leveled, and routable. CLI and
+(`.agents/snippets/core/logger.py`, CES-74) so output is structured, leveled, and routable. CLI and
 `__main__` entrypoints — where stdout *is* the product — are exempt.
 
 ## Why

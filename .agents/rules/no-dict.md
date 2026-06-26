@@ -43,7 +43,7 @@ def origin() -> Point:
     return Point(x=0, y=0)
 ```
 
-See `snippets/no-dict-boundary.py` for the canonical drop-in / comparison template.
+See `.agents/snippets/no-dict-boundary.py` for the canonical drop-in / comparison template.
 
 ## Don't
 
