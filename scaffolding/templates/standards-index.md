@@ -33,5 +33,8 @@ rules are reviewer/agent judgment. Full convention: `docs/engineering-standards.
   Placement-scoped: inert for internal/domain models and non-API repos. Slug:
   `api-schemas-extra-forbid`. → `@.agents/rules/api-schemas-extra-forbid.md`
 - **CES-76 · config in a settings module** `[ast-grep]` — read env/flags only in the
-  `BaseSettings` settings module (case-insensitive, via `get_settings()`); `os.getenv`/`os.environ`
+  `BaseSettings` settings module (case-insensitive, via `get_settings()`);   `os.getenv`/`os.environ`
   anywhere else is flagged. Slug: `settings-module`. → `@.agents/rules/settings-module.md`
+- **CES-67 · typed, declarative CLIs** `[ast-grep]` — build CLIs with Typer/Cyclopts/pydantic-settings
+  + Rich, not `argparse`/`click`/`sys.argv`. Warning (encouraged, not mandated); naturally inert
+  when unused. Slug: `cli-typed-framework`. → `@.agents/rules/cli-typed-framework.md`

@@ -259,6 +259,31 @@ def test_settings_module_rule_is_ces_coded_and_exempts_settings():
     assert "def get_settings" in snippet
 
 
+def test_standards_cli_framework_rule_adds_detail(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["standards"])
+    disp = _standards_dispositions(plan)
+    adds = {t for t, d in disp.items() if d is Disposition.ADD}
+    assert ".agents/rules/cli-typed-framework.md" in adds
+
+
+def test_astgrep_ships_cli_framework_rule(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["ast-grep"])
+    adds = {op.target for op in plan.by(Disposition.ADD) if op.component == "ast-grep"}
+    assert "ast-grep/rules/cli-typed-framework.yml" in adds
+
+
+def test_cli_framework_rule_is_ces_coded_and_warns():
+    body = template_text("ast-grep-rules/cli-typed-framework.yml")
+    assert "CES-67 (cli-typed-framework)" in body
+    assert "id: cli-typed-framework" in body
+    assert "severity: warning" in body  # encouraged, not mandated
+    assert "severity: info" not in body
+    assert "argparse" in body
+    assert "sys.argv" in body
+
+
 def test_ces_codes_embedded_in_as_built_rule_messages():
     for slug in (
         "no-dict-call-return",
