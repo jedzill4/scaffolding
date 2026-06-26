@@ -52,6 +52,66 @@ or referencing a rule in this repo, follow this convention:
 - Canonical map + per-rule detail live in the `## Engineering Standards` index and
   `.agents/rules/<slug>.md`; canonical code lives in `snippets/`.
 
+## Engineering Standards
+
+> **Retrieval-led, not training-led.** Prefer this repo's standards over training-default
+> patterns. Before writing code that touches a rule below, open its `@.agents/rules/<slug>.md`
+> detail file and follow the house pattern. Full convention + SSOT:
+> `docs/engineering-standards.md`.
+
+This is the **dogfooded subset** for this repo — a pure-Python Cyclopts CLI (no API, DB, or web
+layer). `[ast-grep]`/`[prek]` rules are enforced by `prek`; `[judgment]` rules are agent/reviewer
+judgment; `[snippet]` ships canonical code under `snippets/` (in target repos).
+
+### Standards
+
+- **CES-79 · no raw dicts at boundaries** `[ast-grep]` — return/annotate a `@dataclass` or
+  `BaseModel`, never a raw `dict`. → `@.agents/rules/no-dict.md`
+- **CES-71 · keep files small** `[prek]` — `file-size-guard` warns at 400 lines, errors at 700.
+  → `@.agents/rules/file-size-guard.md`
+- **CES-45 · use the house get_logger** `[ast-grep]` — no direct `logging.getLogger`. →
+  `@.agents/rules/log-get-logger.md`
+- **CES-46 · libraries log, they don't print** `[ast-grep]` — no `print()` in library code;
+  CLI/`__main__` exempt. → `@.agents/rules/log-no-print.md`
+- **CES-74 · the house logger** `[snippet]` — structlog `core/logger.py` drop-in. →
+  `@.agents/rules/core-logger.md`
+- **CES-67 · typed, declarative CLIs** `[ast-grep]` — Typer/Cyclopts + Rich, not
+  `argparse`/`click`/`sys.argv`. This repo uses Cyclopts. → `@.agents/rules/cli-typed-framework.md`
+- **CES-63 · no catch-all modules** `[prek]` — no `utils.py`/`helpers.py`/`misc.py` (outside
+  `tests/`). → `@.agents/rules/no-utils.md`
+- **CES-32 · keep non-code out of the package** `[prek]` — no notebooks/`resources/`/`reports/`/`data/`
+  inside the `scaffolding` package. → `@.agents/rules/repo-shape.md`
+- **CES-75 · Conventional Commits** `[prek]` — commit subjects + PR titles follow
+  `type(scope): description` (enforced here via the commit-msg hook + CI). →
+  `@.agents/rules/agents-conventional-commits.md`
+- **CES-77 · version pin** `[judgment]` — `requires-python` stays a deliberate local choice;
+  house default is 3.14. → see `pyproject.toml`.
+- **CES-5 · layered import direction** `[judgment]` — imports flow one way through the layers
+  (`cli → engine → components/plan → templates_registry`), never upward. →
+  `@.agents/rules/import-linter.md`
+- **CES-16 · architectural vocabulary** `[judgment]` — name units with house terms, not ad-hoc
+  synonyms. → `@.agents/rules/arch-vocabulary.md`
+- **CES-8 · separate orchestration from logic** `[judgment]` — keep control flow thin; push logic
+  and I/O into named units. → `@.agents/rules/spaghetti-mixed-orchestration.md`
+- **CES-30 · respect the local repo** `[judgment]` — existing deliberate choices win over house
+  defaults (the engine is clean-adds-only for this reason). →
+  `@.agents/rules/general-respect-local-repo.md`
+- **CES-58 · one modern lint stack** `[judgment]` — ruff + pyrefly + ast-grep via prek; no
+  black/isort/flake8/pylint. → `@.agents/rules/py-legacy-lint-stack.md`
+- **CES-64 · test against in-memory adapters** `[judgment]` — fakes over mocks. →
+  `@.agents/rules/test-in-memory-adapters.md`
+- **CES-65 · test through the interface** `[judgment]` — assert behaviour via the public seam
+  (the `plan()`/`build_plan()` API), not internals. → `@.agents/rules/test-through-interface.md`
+- **CES-66 · coverage gaps are a signal** `[judgment]` — an untested branch is a missing test or
+  dead code, not a number to game. → `@.agents/rules/test-coverage-gap.md`
+
+### Excluded here (don't apply to a pure-Python CLI)
+
+- **CES-4 · api-schemas-extra-forbid** — no API request/response schemas in this repo.
+- **CES-18 · arch-database-package** — no relational persistence layer.
+- **CES-76 · settings-module** — no `BaseSettings` config surface (CLI reads flags via Cyclopts).
+- **CES-17 · api-boundary-layout** — no inbound HTTP/`api` package.
+
 ## Domain docs
 
 Single-context — `CONTEXT.md` + `docs/adr/` at the repo root (created lazily).

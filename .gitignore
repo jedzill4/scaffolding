@@ -3,7 +3,10 @@
 .worktrees
 .env
 .scratch
-.agents
+.agents/*
+# Curated CES rule docs are authored content referenced by the tracked AGENTS.md index — keep
+# them versioned even though installed agent skills under .agents/ stay ignored.
+!.agents/rules/
 skills-lock.json
 
 # python / build
