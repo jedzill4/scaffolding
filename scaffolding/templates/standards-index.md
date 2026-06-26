@@ -59,3 +59,24 @@ rules are reviewer/agent judgment. Full convention: `docs/engineering-standards.
 - **CES-17 · API boundary layout** `[judgment]` — inbound HTTP lives in a versioned `api` package
   (`api/<v>/schemas/{requests,responses}`, `routers/`); only `api` is the inbound boundary. Slug:
   `api-boundary-layout`. → `@.agents/rules/api-boundary-layout.md`
+- **CES-16 · architectural vocabulary** `[judgment]` — name units with the house terms
+  (`entrypoints`/`api`/`database`/`impl`/`core`, ports/adapters), not ad-hoc synonyms. Slug:
+  `arch-vocabulary`. → `@.agents/rules/arch-vocabulary.md`
+- **CES-8 · separate orchestration from logic** `[judgment]` — keep control flow thin; push
+  business logic and I/O into named, separately-testable units. Slug:
+  `spaghetti-mixed-orchestration`. → `@.agents/rules/spaghetti-mixed-orchestration.md`
+- **CES-30 · respect the local repo** `[judgment]` — existing deliberate choices (pins, config,
+  layout) win over house defaults; adopt standards as explicit migrations, never silent
+  overwrites. Slug: `general-respect-local-repo`. → `@.agents/rules/general-respect-local-repo.md`
+- **CES-58 · one modern lint stack** `[judgment]` — ruff + pyrefly + ast-grep via prek; don't
+  reintroduce black/isort/flake8/pylint. Slug: `py-legacy-lint-stack`. →
+  `@.agents/rules/py-legacy-lint-stack.md`
+- **CES-64 · test against in-memory adapters** `[judgment]` — drive logic through working
+  in-memory fakes of your ports, not mocks or live I/O. Slug: `test-in-memory-adapters`. →
+  `@.agents/rules/test-in-memory-adapters.md`
+- **CES-65 · test through the interface** `[judgment]` — assert on observable behaviour via the
+  public seam, never private internals. Slug: `test-through-interface`. →
+  `@.agents/rules/test-through-interface.md`
+- **CES-66 · coverage gaps are a signal** `[judgment]` — treat an uncovered branch as a missing
+  test, dead code, or a seam to refactor — not a number to game. Slug: `test-coverage-gap`. →
+  `@.agents/rules/test-coverage-gap.md`

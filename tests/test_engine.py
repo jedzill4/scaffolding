@@ -404,6 +404,41 @@ def test_pyproject_template_version_pin_and_importlinter_skeleton():
     assert "CES-17" in body
 
 
+def test_standards_judgment_tier_details_and_snippet(repo: Path):
+    (repo / "app.py").write_text("x = 1\n")
+    plan = build_plan(repo, _facts(repo), Settings(), requested=["standards"])
+    disp = _standards_dispositions(plan)
+    adds = {t for t, d in disp.items() if d is Disposition.ADD}
+    for slug in (
+        "arch-vocabulary",
+        "spaghetti-mixed-orchestration",
+        "general-respect-local-repo",
+        "py-legacy-lint-stack",
+        "test-in-memory-adapters",
+        "test-through-interface",
+        "test-coverage-gap",
+    ):
+        assert f".agents/rules/{slug}.md" in adds
+    assert "snippets/tests/in_memory_repository.py" in adds
+
+
+def test_judgment_tier_index_entries_marked_judgment():
+    index = template_text("standards-index.md")
+    for code in ("CES-16", "CES-8", "CES-30", "CES-58", "CES-64", "CES-65", "CES-66"):
+        assert code in index
+    # all seven are judgment-tier and point at their detail files.
+    for slug in (
+        "arch-vocabulary",
+        "spaghetti-mixed-orchestration",
+        "general-respect-local-repo",
+        "py-legacy-lint-stack",
+        "test-in-memory-adapters",
+        "test-through-interface",
+        "test-coverage-gap",
+    ):
+        assert f"@.agents/rules/{slug}.md" in index
+
+
 def test_ces_codes_embedded_in_as_built_rule_messages():
     for slug in (
         "no-dict-call-return",

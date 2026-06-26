@@ -43,9 +43,22 @@ STANDARDS_RULE_DETAILS = [
     "agents-conventional-commits",
     "import-linter",
     "api-boundary-layout",
+    "arch-vocabulary",
+    "spaghetti-mixed-orchestration",
+    "general-respect-local-repo",
+    "py-legacy-lint-stack",
+    "test-in-memory-adapters",
+    "test-through-interface",
+    "test-coverage-gap",
 ]
 # Canonical drop-in / comparison code shipped under snippets/ (may be nested, e.g. core/logger.py).
-STANDARDS_SNIPPETS = ["no-dict-boundary.py", "core/logger.py", "api-schemas.py", "settings.py"]
+STANDARDS_SNIPPETS = [
+    "no-dict-boundary.py",
+    "core/logger.py",
+    "api-schemas.py",
+    "settings.py",
+    "tests/in_memory_repository.py",
+]
 ASTGREP_RULES = [
     "no-dict-call-return",
     "no-dict-literal-return",

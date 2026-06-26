@@ -31,11 +31,13 @@ _configured = False
 
 
 def _is_prod() -> bool:
-    return os.getenv("ENV", "dev").lower() in {"prod", "production"}
+    # Bootstrap infra: logging configures before the settings module exists, so it reads env
+    # directly. Visible suppression keeps the CES-76 exception auditable.
+    return os.getenv("ENV", "dev").lower() in {"prod", "production"}  # ast-grep-ignore: settings-module
 
 
 def _level() -> int:
-    name = os.getenv("LOG_LEVEL", "INFO").upper()
+    name = os.getenv("LOG_LEVEL", "INFO").upper()  # ast-grep-ignore: settings-module
     return logging.getLevelNamesMapping().get(name, logging.INFO)
 
 
